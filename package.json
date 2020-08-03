@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/potatolight/tinyapp/issues"
   },
-  "homepage": "https://github.com/potatolight/tinyapp#readme"
+  "homepage": "https://github.com/potatolight/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
