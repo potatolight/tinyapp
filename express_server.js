@@ -1,8 +1,10 @@
 const express = require("express");
+// var methodOverride = require('method-override')
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+// app.use(methodOverride('X-HTTP-Method-Override'))
 
 app.set("view engine", "ejs");
 // app.set("views", "./views");
@@ -46,9 +48,16 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   console.log("here")
+  console.log(req)
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  console.log(req)
+   delete urlDatabase[req.params.shortURL]
+   res.redirect("/urls")
+})
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL]
   res.redirect(longURL);
