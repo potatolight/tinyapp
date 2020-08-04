@@ -16,6 +16,7 @@ function generateRandomString() {
   return output
 }
 
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -32,20 +33,26 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 app.post("/urls", (req, res) => {
+  let shortURL = generateRandomString()
   console.log(req.body);  
-  let templateVars = { shortURL: generateRandomString(), longURL: req.body['longURL'] };
-  res.render("urls_show", templateVars);
+  urlDatabase[shortURL] = req.body['longURL'];
+  console.log(urlDatabase)
+  res.redirect("/urls/" +shortURL);
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-// app.get("/urls/:shortURL", (req, res) => {
-//   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-//   res.render("urls_show", templateVars);
-// });
 
-
+app.get("/urls/:shortURL", (req, res) => {
+  console.log("here")
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  res.render("urls_show", templateVars);
+});
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL]
+  res.redirect(longURL);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
