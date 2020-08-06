@@ -63,25 +63,35 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/login", (req, res) =>{
-  const user = req.body;
-  const email = users[req.cookies[user_id]].email
-  const password = users[req.cookies[user_id]].password
-  if(user['email'] !== email && user['password'] !== password) {
-    res.redirect("/urls/${req.cookies[user_id]}")
-  } else {
-    res.redirect('/register');
-  }
-});
+// app.post("/login", (req, res) =>{
+//   const user = req.body;
+//   const email = users[req.cookies[user_id]].email
+//   const password = users[req.cookies[user_id]].password
+//   if(user['email'] !== email && user['password'] !== password) {
+//     res.redirect("/urls/${req.cookies[user_id]}")
+//   } else {
+//     res.redirect('/register');
+//   }
+// });
 
 app.get("/login", (req, res) => {
-  res.render("login")
+  res.render("urls_login")
 })
 
 app.post("/login", (req,res) => {
-  res.cookie('user_id', req.body.user_id );
-  // console.log('Cookies: ', req.cookies);
-  res.redirect("/urls");
+  let user_id = generateRandomString();
+  let user = req.body;
+  if(!user.email && !user.password ) {
+    res.send('Please write valid email address')
+  }
+  for(let key in users) {
+    console.log("key: ", users[key])
+     if( users[key].email === user.email && users[key].password === user.password) {
+      res.redirect("/urls");
+       } 
+  }  
+   res.send('The user is in the database')
+
 })
 
 
@@ -151,3 +161,5 @@ app.post('/register', (req,res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+// res.cookie('user_id', req.body.user_id );
