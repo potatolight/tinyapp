@@ -8,13 +8,15 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-  
-       
+      <% if(email) {%>
         <p style="position: absolute;right: 100px; top:14px;">Logged in As: <%= email %>!</p>
         <form style="position: absolute; right:10px;" method="POST" action="/logout">
             <button type = submit>Log Out</button>
         </form> 
-
+      <%} else { %>
+        <a style="position: absolute; right:10px; font-size:20"  href="/register">Register</a>
+        <a style="position: absolute; right:100px; font-size:20" href="/login">Log In</a>
+       <% } %>
       </div>
     </div>
   </nav>
