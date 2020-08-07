@@ -143,7 +143,7 @@ app.post("/urls/:id/:shortURL", (req, res) => {
   const userid = req.params.id;
   const short = req.params.shortURL;
   if (!req.body['longURL'] || urlDatabase[short]['longURL'] === req.body['longURL']) {
-    return res.redirect('/login');
+    return res.send('Please enter valid longURL');
   }
   const data = {
     longURL: req.body.longURL,
