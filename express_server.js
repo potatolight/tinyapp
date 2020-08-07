@@ -1,3 +1,4 @@
+
 const express = require("express");
 // var methodOverride = require('method-override')
 const app = express();
@@ -52,16 +53,44 @@ function urlsForUser (id) {
 }
 
 
-//---------delete -------------------//
-app.post("/urls/:shortURL/delete", (req, res) => {
-   delete urlDatabase[req.params.shortURL]
-   res.redirect("/urls")
+//---------delete -------------------改过了//
+app.post("/urls/:id/:shortURL/delete", (req, res) => {
+  const userid = req.params.id
+  const short = req.params.shortURL
+  if(urlDatabase[short]['userID'] === userid && urlDatabase[short]) {
+    delete urlDatabase[short]
+  }
+   return res.redirect("/urls/" + userid)
+});
+
+//----------rigister--------------改过了 下面两个//
+
+app.get('/register', (req, res) => {
+  res.render('urls_register');
+});
+
+app.post('/register', (req,res) => {
+  let user_id = generateRandomString();
+  let user = req.body;
+  if(!user.email && !user.password ) {
+    return res.send('Please write valid email address')
+  }
+ for(let key in users) {
+    if( users[key].email === user.email) {
+    return res.send('The user is in the database')
+      } 
+   }
+  users[user_id] = {
+  id: user_id,
+  email: user.email,
+  password: user.password
+  }
+  res.cookie('user_id', user_id);
+  return res.redirect('/urls/' + user_id)
 });
 
 
-
-
-//-----------login------------------//
+//-----------login------------------改过了//
 app.get("/login", (req, res) => {
   res.render("urls_login")
 })
@@ -93,42 +122,56 @@ app.get("/urls/new", (req, res) => {
    res.render("urls_new", templateVars);
 });
 
-
-app.post("/urls/:shortURL", (req, res) => {
-  for(let key in urlDatabase) {
-    if(!req.body['longURL'] || urlDatabase[key]['longURL'] === req.body['longURL'] ) {
+//---------改好-------//
+app.post("/urls/:id/:shortURL", (req, res) => {
+  const userid = req.params.id;
+  console.log(userid)
+  const short = req.params.shortURL; 
+    if(!req.body['longURL'] || urlDatabase[short]['longURL'] === req.body['longURL'] ) {
       return  res.send('The longURL is invalid! Please kindly reupdate the longURL') 
     }
-  }
   const data = {
     longURL: req.body.longURL,
     userID: req.cookies["user_id"]
   }
    urlDatabase[req.params.shortURL] = data;
-   res.redirect("/urls")
+   res.redirect("/urls/" + userid)
 })
+console.log(urlDatabase)
+
+//------urls/:id 改过了-------/
 
 app.get("/urls/:id", (req,res) => {
   const userID = req.params.id;
   const result = urlsForUser(userID);
   const templateVars  = {user: users[userID], urls: result};
+  let values = Object.keys(users)
+  if(!values.includes(userID)) {
+    res.send("Please enter valid ID")
+  }
   res.render("urls_index", templateVars)
 })
 
-app.post("/urls", (req, res) => {
+//------正在修改 ----------//
+app.post("/urls/:id", (req, res) => {
   let shortURL = generateRandomString();
-  for(let key in urlDatabase) {
-    if(!req.body['longURL'] || urlDatabase[key]['longURL'] === req.body['longURL'] ) {
-      return res.redirect("/urls");
-    } 
-  }
+    const userid = req.params.id;
+
+    console.log(userid)
+      for(let key in urlDatabase) {
+        if(urlDatabase[key]['userID'] === userid) {
+          if(!req.body['longURL'] || urlDatabase[key]['longURL'] === req.body['longURL'] ) {
+            return res.redirect("/urls");
+          } 
+        }
+      }
   const data = {
     longURL: req.body.longURL,
     userID: req.cookies["user_id"]
   }
   urlDatabase[shortURL] = data;
 
-  return res.redirect("/urls");
+  return res.redirect("/urls/" + userid);
 });
 
 
@@ -146,8 +189,8 @@ app.get("/urls", (req, res) => {
   };
   res.render("urls_index", templateVars);
 });
-
-app.get("/urls/:shortURL", (req, res) => {
+//------已经修改----------//
+app.get("/urls/:id/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.cookies['user_id']]}
   res.render("urls_show", templateVars);
 });
@@ -163,31 +206,7 @@ app.post("/logout", (req, res) => {
 
 
 
-//----------rigister--------------//
 
-app.get('/register', (req, res) => {
-  res.render('urls_register');
-});
-
-app.post('/register', (req,res) => {
-  let user_id = generateRandomString();
-  let user = req.body;
-  if(!user.email && !user.password ) {
-    return res.send('Please write valid email address')
-  }
- for(let key in users) {
-    if( users[key].email === user.email) {
-    return res.send('The user is in the database')
-      } 
-   }
-  users[user_id] = {
-  id: user_id,
-  email: user.email,
-  password: user.password
-  }
-  res.cookie('user_id', user_id);
-  return res.redirect('/urls' + user_id)
-});
 
 //-------- u/:shortURL--------------------//
 app.get("/u/:shortURL", (req, res) => {

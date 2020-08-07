@@ -21,7 +21,7 @@
 
   <main style="text-align:center;"></main>
     <h3 style="text-align:center;" >EDIT</h3>
-    <form style="text-align:center;" action="/urls/<%= shortURL %>" method="POST">
+    <form style="text-align:center;" action="/urls/<%= user.id %>/<%= shortURL %>" method="POST">
         <label for="longURL">New URL:</label>
         <input type="text" name="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em">
         <button type="submit" class="btn btn-primary">Submit</button>
