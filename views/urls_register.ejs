@@ -6,12 +6,17 @@
   <title>Document</title>
 </head>
 <body>
+  <header>
+    <a style="position: absolute; right:10px; font-size:20"  href="/register">Register</a>
+    <a style="position: absolute; right:100px; font-size:20" href="/login">Log In</a>
+  </header>
+  
   <h1>Welcome to register Tinyapp</h1>
   <form action="/register" method="POST">
     <label for="email">Email:</label> 
-    <input id="email" name="email" placeholder="email" style="width: 150px">
+    <input name="email" placeholder="email" style="width: 150px">
     <label for="password">Password:</label>
-    <input id="password" type="password" name="password" placeholder="password" style="width: 150px">
+    <input type="password" name="password" placeholder="password" style="width: 150px">
     <button>register</button>
   </form>
 </body>

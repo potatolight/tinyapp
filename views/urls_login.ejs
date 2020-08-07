@@ -7,10 +7,15 @@
   <title>Login page</title>
 </head>
 <body>
-  <div id="login_frame">
-  <form method="POST" action="/login">
+  <header>
+    <a style="position: absolute; right:10px; font-size:20"  href="/register">Register</a>
+    <a style="position: absolute; right:100px; font-size:20" href="/login">Log In</a>
+  </header>
+  <div>
+    <h1>Welcome to Login Tinyapp</h1>
+   <form method="POST" action="/login">
     <label>username</label>
-    <input type="email" name="email">
+    <input type="email" name="email" placeholder="email">
     <label>password</label>
     <input type="password" name="password">
     <button type="submit">sign in</button>
