@@ -77,11 +77,11 @@ app.post('/register', (req,res) => {
   let user = req.body;
   const password = user.password;
   if (!user.email || !user.password) {
-    return res.send('Please write valid email address');
+    return res.status(401).send('Error 401, Please write valid email address and password');
   }
   for (let key in users) {
     if (users[key].email === user.email) {
-      return res.send('The user is in the database');
+      return res.status(401).send('Error 401, The user is in the database');
     }
   }
   bcrypt
@@ -111,11 +111,11 @@ app.post("/login", (req,res) => {
   const password = user["password"];
   let user_id = getUserByEmail(user["email"], users);
   const dbData = users[user_id];
-  if (!user.email && !user.password) {
-    return res.status(401).send('Please write valid email address');
+  if (!user.email || !user.password) {
+    return res.status(401).send('Error 401, Please write valid email address and password');
   }
   if (!dbData) {
-    return res.status(401).send('The user is not in the database');
+    return res.status(401).send('Error 401, The user is not in the database');
   }
   bcrypt
     .compare(password, dbData["password"])
@@ -124,7 +124,7 @@ app.post("/login", (req,res) => {
         req.session.user_id = user_id;
         res.redirect("/urls/" + user_id);
       } else {
-        res.status(401).send("Input is incorrect");
+        res.status(401).send("Error401, password is incorrect");
       }
     });
 });
@@ -141,9 +141,8 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls/:id/:shortURL", (req, res) => {
   const userid = req.params.id;
-  const short = req.params.shortURL;
-  if (!req.body['longURL'] || urlDatabase[short]['longURL'] === req.body['longURL']) {
-    return res.send('Please enter valid longURL');
+  if (!req.body['longURL']) {
+    return res.status(403).send('Error403, The input part can not be empty');
   }
   const data = {
     longURL: req.body.longURL,
@@ -159,7 +158,7 @@ app.get("/urls/:id", (req,res) => {
   const templateVars  = {user: users[userID], urls: result};
   let values = Object.keys(users);
   if (!values.includes(userID)) {
-    return res.send("Please enter valid ID");
+    return res.status(401).send("Error 401, Please enter valid ID");
   }
   res.render("urls_index", templateVars);
 });
