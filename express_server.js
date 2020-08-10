@@ -37,7 +37,8 @@ const users = {
 };
 
 
-//---------delete part-----------------//
+//delete part //
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const user_id = req.session.user_id;
   let short = req.params.shortURL;
@@ -47,7 +48,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-//----------rigister part--------//
+//rigister part for post and get//
 
 app.get('/register', (req, res) => {
   res.render('urls_register');
@@ -77,13 +78,12 @@ app.post('/register', (req,res) => {
         password: hash
       };
       req.session.user_id = user_id;
-      console.log(urlDatabase)
       return res.redirect('/urls');
     });
 });
 
 
-//-----------login part---------//
+//login part for post and get//
 app.get("/login", (req, res) => {
   res.render("urls_login");
 });
@@ -123,18 +123,26 @@ app.get("/urls/new", (req, res) => {
 
 //update longURL--get //
 app.get("/urls/:shortURL", (req, res) => {
-  if (!req.session["user_id"]) {
+  let short = req.params.shortURL;
+  let user_id = req.session["user_id"];
+  if (!user_id) {
     return res.status(401).send("Error 401, Please enter valid ID");
+  } else {
+    if (!urlDatabase[short] || (urlDatabase[short] && urlDatabase[short]["userID"] !== user_id)) {
+      return res.status(403).send('Error403, Please input valid longURL');
+    }
+    if (short && urlDatabase[short]["userID"] === user_id) {
+      let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.session.user_id]};
+      return res.render("urls_show", templateVars);
+    }
   }
-  if (!urlDatabase[req.params.shortURL]) {
-    return res.status(403).send('Error403, Please input valid longURL');
-  }
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.session.user_id]};
-  res.render("urls_show", templateVars);
 });
 
 //update longURl---post//
 app.post("/urls/:shortURL", (req, res) => {
+  if (!users[req.session["user_id"]]) {
+    res.redirect("/login");
+  }
   const data = {
     longURL: req.body.longURL,
     userID: req.session.user_id
