@@ -7,7 +7,8 @@ const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 app.set("view engine", "ejs");
 
-const { getUserByEmail } = require('./helpers');
+const { getUserByEmail, urlsForUser, generateRandomString} = require('./helpers');
+
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -35,28 +36,8 @@ const users = {
   }
 };
 
-//--------helper function----------//
 
-const urlsForUser = function(id) {
-  let output = {};
-  for (let key in urlDatabase) {
-    if (urlDatabase[key]["userID"] === id) {
-      output[key] = urlDatabase[key];
-    }
-  }
-  return output;
-};
-
-const generateRandomString = function() {
-  const string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let output = '';
-  for (let i = 0; i < 6; i++) {
-    output += string[Math.floor(Math.random() * string.length)];
-  }
-  return output;
-};
-
-//---------delete -------------------//
+//---------delete part-----------------//
 app.post("/urls/:shortURL/delete", (req, res) => {
   const user_id = req.session.user_id;
   let short = req.params.shortURL;
@@ -96,6 +77,7 @@ app.post('/register', (req,res) => {
         password: hash
       };
       req.session.user_id = user_id;
+      console.log(urlDatabase)
       return res.redirect('/urls');
     });
 });
@@ -130,7 +112,7 @@ app.post("/login", (req,res) => {
 });
 
 
-//creat a new longURL get//
+//creat a new longURL---get//
 app.get("/urls/new", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.session.user_id]};
   if (templateVars['user'] === undefined) {
@@ -139,7 +121,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//update longURL
+//update longURL--get //
 app.get("/urls/:shortURL", (req, res) => {
   if (!req.session["user_id"]) {
     return res.status(401).send("Error 401, Please enter valid ID");
@@ -151,7 +133,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//update longURl post//
+//update longURl---post//
 app.post("/urls/:shortURL", (req, res) => {
   const data = {
     longURL: req.body.longURL,
@@ -161,7 +143,7 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-//new longURL post//
+//add new longURL---post//
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   const user_id = req.session["user_id"];
@@ -189,7 +171,7 @@ app.get("/urls", (req, res) => {
       user = users[req.session.user_id ];
     }
   }
-  const who = urlsForUser(req.session.user_id);
+  const who = urlsForUser(req.session.user_id, urlDatabase);
   let templateVars = {
     urls: who,
     user
