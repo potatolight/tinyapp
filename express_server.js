@@ -57,16 +57,16 @@ const generateRandomString = function() {
 };
 
 //---------delete -------------------//
-app.post("/urls/:id/:shortURL/delete", (req, res) => {
-  const userid = req.params.id;
-  const short = req.params.shortURL;
-  if (urlDatabase[short]['userID'] === userid && urlDatabase[short]) {
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const user_id = req.session.user_id;
+  let short = req.params.shortURL;
+  if (user_id && urlDatabase[short]["userID"] === user_id) {
     delete urlDatabase[short];
   }
-  res.redirect("/urls/" + userid);
+  res.redirect("/urls");
 });
 
-//----------rigister--------------//
+//----------rigister part--------//
 
 app.get('/register', (req, res) => {
   res.render('urls_register');
@@ -96,12 +96,12 @@ app.post('/register', (req,res) => {
         password: hash
       };
       req.session.user_id = user_id;
-      return res.redirect('/urls/' + user_id);
+      return res.redirect('/urls');
     });
 });
 
 
-//-----------login------------------//
+//-----------login part---------//
 app.get("/login", (req, res) => {
   res.render("urls_login");
 });
@@ -122,15 +122,15 @@ app.post("/login", (req,res) => {
     .then((result) => {
       if (result) {
         req.session.user_id = user_id;
-        res.redirect("/urls/" + user_id);
+        res.redirect("/urls");
       } else {
         res.status(401).send("Error401, password is incorrect");
       }
     });
 });
 
-//------------ urls ------------------//
 
+//creat a new longURL get//
 app.get("/urls/new", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.session.user_id]};
   if (templateVars['user'] === undefined) {
@@ -139,35 +139,34 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.post("/urls/:id/:shortURL", (req, res) => {
-  const userid = req.params.id;
-  if (!req.body['longURL']) {
-    return res.status(403).send('Error403, The input part can not be empty');
+//update longURL
+app.get("/urls/:shortURL", (req, res) => {
+  if (!req.session["user_id"]) {
+    return res.status(401).send("Error 401, Please enter valid ID");
   }
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(403).send('Error403, Please input valid longURL');
+  }
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.session.user_id]};
+  res.render("urls_show", templateVars);
+});
+
+//update longURl post//
+app.post("/urls/:shortURL", (req, res) => {
   const data = {
     longURL: req.body.longURL,
     userID: req.session.user_id
   };
   urlDatabase[req.params.shortURL] = data;
-  res.redirect("/urls/" + userid);
+  res.redirect("/urls");
 });
 
-app.get("/urls/:id", (req,res) => {
-  const userID = req.params.id;
-  const result = urlsForUser(userID);
-  const templateVars  = {user: users[userID], urls: result};
-  let values = Object.keys(users);
-  if (!values.includes(userID)) {
-    return res.status(401).send("Error 401, Please enter valid ID");
-  }
-  res.render("urls_index", templateVars);
-});
-
-app.post("/urls/:id", (req, res) => {
+//new longURL post//
+app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  const userid = req.params.id;
+  const user_id = req.session["user_id"];
   for (let key in urlDatabase) {
-    if (urlDatabase[key]['userID'] === userid) {
+    if (urlDatabase[key]['userID'] === user_id) {
       if (!req.body['longURL'] || urlDatabase[key]['longURL'] === req.body['longURL']) {
         return res.redirect("/urls");
       }
@@ -179,10 +178,10 @@ app.post("/urls/:id", (req, res) => {
   };
   urlDatabase[shortURL] = data;
 
-  return res.redirect("/urls/" + userid);
+  return res.redirect("/urls");
 });
 
-
+//get urls page //
 app.get("/urls", (req, res) => {
   let user;
   if (req.session.user_id) {
@@ -196,11 +195,6 @@ app.get("/urls", (req, res) => {
     user
   };
   res.render("urls_index", templateVars);
-});
-
-app.get("/urls/:id/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.session.user_id]};
-  res.render("urls_show", templateVars);
 });
 
 
